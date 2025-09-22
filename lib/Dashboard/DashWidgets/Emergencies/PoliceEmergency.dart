@@ -38,7 +38,7 @@ class PoliceEmergency extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
-                      backgroundColor: Colors.white.withOpacity(0.5),
+                      backgroundColor: const Color.fromRGBO(255, 255, 255, 0.5),
                       radius: 25,
                       child: Center(
                           child: Image.asset(

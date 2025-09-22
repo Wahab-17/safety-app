@@ -47,7 +47,6 @@ void onStart(ServiceInstance service) async {
 
   // Listen to events from UI (v5 API)
   service.on('setAsForeground').listen((_) async {
-    // Check for AndroidServiceInstance to use Android-specific methods
     if (service is AndroidServiceInstance) {
       service.setAsForegroundService();
       service.setForegroundNotificationInfo(
@@ -216,9 +215,9 @@ void callbackDispatcher() {
     final prefs = await SharedPreferences.getInstance();
     print(contact);
     // Explicitly handle null for the list elements
-    List<String> location = prefs.getStringList("location") ?? ["0", "0"];
-    String link = "http://maps.google.com/?q=$${location[0]},${location[1]}";
-    print(location);
+    final loc = prefs.getStringList("location") ?? ["0", "0"];
+    final link = "http://maps.google.com/?q=${loc[0]},${loc[1]}";
+    print(loc);
     print(link);
     // Use null-aware operator to safely call sendSms
     Telephony.backgroundInstance.sendSms(to: contact ?? "", message: "I am on my way! Track me here.\n$link");

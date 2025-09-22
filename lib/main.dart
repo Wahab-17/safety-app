@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
           future: isAppOpeningForFirstTime(),
           builder: (context, AsyncSnapshot<bool> snap) {
             if (snap.hasData) {
-              if (snap.data) {
+              if (snap.data == true) {
                 return Dashboard();
               } else {
                 return Splash();
