@@ -3,7 +3,7 @@ import 'package:womensafteyhackfair/constants.dart';
 
 class ArticleDesc extends StatelessWidget {
   final int index;
-  const ArticleDesc({Key key, this.index}) : super(key: key);
+  const ArticleDesc({Key? key, required this.index}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class ArticleDesc extends StatelessWidget {
 
 class ArticleImage extends StatelessWidget {
   final String imageStr;
-  const ArticleImage({Key key, this.imageStr}) : super(key: key);
+  const ArticleImage({Key? key, required this.imageStr}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,8 @@
+// background_services.dart
 import 'dart:async';
 
 import 'package:background_location/background_location.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:shake/shake.dart';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:telephony/telephony.dart';
 import 'package:vibration/vibration.dart';
 import 'package:workmanager/workmanager.dart';
+
 
 // ** IMPORTANT INSTRUCTIONS **
 
@@ -30,37 +32,41 @@ import 'package:workmanager/workmanager.dart';
 // background and will listen to shake events no matter the app is closed 
 // or in background or foreground. 
 
-// For that I have used ->  flutter_background_service: ^0.1.5
+// For that I have used ->  flutter_background_service: ^0.1.5
 // Which is a very handy plugin to run our dart code in background.
 
 
 // This function starts background isolates which is called when the app starts
 // in main method and this will instantiate the background service and 
-// then will listen  for updates. 
-void onStart() async {
+// then will listen  for updates. 
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
-  final service = FlutterBackgroundService();
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  // I have instanciated the service object above and here I am just 
-  // making a stream to listen for the events
-  service.onDataReceived.listen((event) async {
-    if (event["action"] == "setAsForeground") {
-      service.setForegroundMode(true);
-
-      return;
-    }
-
-    if (event["action"] == "setAsBackground") {
-      service.setForegroundMode(false);
-    }
-
-    if (event["action"] == "stopService") {
-      service.stopBackgroundService();
+  // Listen to events from UI (v5 API)
+  service.on('setAsForeground').listen((_) async {
+    // Check for AndroidServiceInstance to use Android-specific methods
+    if (service is AndroidServiceInstance) {
+      service.setAsForegroundService();
+      service.setForegroundNotificationInfo(
+        title: 'Amaan',
+        content: 'Safe Shake is active',
+      );
     }
   });
-  Location _location;
+  service.on('setAsBackground').listen((_) async {
+    if (service is AndroidServiceInstance) {
+      await service.setAsBackgroundService();
+    }
+  });
+  service.on('stopService').listen((_) async {
+    await service.stopSelf();
+  });
+
+  Location? _location = null; // Explicitly initialized to null
+
 // This is another handy plugin whcih works in background independently and fetches the 
 // user location as we need location for some of the functionalities. Initially it will 
 // show a notification to user that the service is running 
@@ -82,8 +88,7 @@ void onStart() async {
   // be called when there are some location updates. and will save the data 
   // in Shared Preferences. 
 
-  // ** IMPORTANT CONCEPT ** 
-  // When working with isolates we need to comunicate data through ports because unlike 
+  // ** IMPORTANT CONCEPT ** // When working with isolates we need to comunicate data through ports because unlike 
   // threads isolates does not share any memory.
   // Here I am usong shared preferences to save data because 
   // I dont need the data actively but need on specific time intervals. 
@@ -93,10 +98,12 @@ void onStart() async {
   // Now you will think that it can be possible through ports too but why do it the hard 
   // way when it can be done easily :)
   // 
-  BackgroundLocation.getLocationUpdates((location) {
+  BackgroundLocation.getLocationUpdates((location) async {
     _location = location;
-    prefs.setStringList("location",
-        [location.latitude.toString(), location.longitude.toString()]);
+    await prefs.setStringList("location", [
+      (location.latitude)?.toString() ?? '0',
+      (location.longitude)?.toString() ?? '0'
+    ]);
   });
   // Here I used screenShaker plugin to listen to shake events and I set the 
   // threshold to 7, to avoid unnecessery shakes which can be cause by mistake 
@@ -109,9 +116,11 @@ void onStart() async {
       shakeThresholdGravity: 7,
       onPhoneShake: () async {
         print("Test 1");
-        if (await Vibration.hasVibrator()) {
+        // Use `?? false` to handle the nullable boolean return value from hasVibrator()
+        if (await Vibration.hasVibrator() ?? false) {
           print("Test 2");
-          if (await Vibration.hasCustomVibrationsSupport()) {
+          // Use `?? false` to handle the nullable boolean return value from hasCustomVibrationsSupport()
+          if (await Vibration.hasCustomVibrationsSupport() ?? false) {
             print("Test 3");
             Vibration.vibrate(duration: 1000);
           } else {
@@ -126,14 +135,16 @@ void onStart() async {
         String link = '';
         print("Test 7");
         try {
-          double lat = _location.latitude;
-          double long = _location.longitude;
+          final lat = _location?.latitude;
+          final long = _location?.longitude;
           print("$lat ... $long");
           print("Test 9");
-          link = "http://maps.google.com/?q=$lat,$long";
+          if (lat != null && long != null) {
+            link = "http://maps.google.com/?q=$lat,$long";
+          }
           SharedPreferences prefs = await SharedPreferences.getInstance();
           List<String> numbers = prefs.getStringList("numbers") ?? [];
-          String error;
+          String? error;
           try {
             if (numbers.isEmpty) {
               screenShake = "No contacs found, Please call 15 ASAP.";
@@ -170,20 +181,21 @@ void onStart() async {
   print("Test 12");
   // on initial call to onStart() this will call which brings the background 
   // service to life
-  service.setForegroundMode(true);
+  if (service is AndroidServiceInstance) {
+    service.setAsForegroundService();
+    service.setForegroundNotificationInfo(title: 'Safe Shake activated!', content: screenShake);
+  }
   // Timer is placed so the background isolate can work every 
   // second unlike other worker managers
-  Timer.periodic(Duration(seconds: 1), (timer) async {
-    if (!(await service.isServiceRunning())) timer.cancel();
-
-    service.setNotificationInfo(
-      title: "Safe Shake activated!",
-      content: screenShake,
-    );
-
-    service.sendData(
-      {"current_date": DateTime.now().toIso8601String()},
-    );
+  Timer.periodic(const Duration(seconds: 1), (timer) async {
+    // On v5, rely on lifecycle; keep updating notification
+    if (service is AndroidServiceInstance) {
+      service.setForegroundNotificationInfo(
+        title: 'Safe Shake activated!',
+        content: screenShake,
+      );
+    }
+    service.invoke('tick', {"current_date": DateTime.now().toIso8601String()});
   });
 }
 
@@ -200,17 +212,33 @@ void onStart() async {
 
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    String contact = inputData['contact'];
+    String? contact = inputData?['contact']; // Added null safety check
     final prefs = await SharedPreferences.getInstance();
     print(contact);
-    List<String> location = prefs.getStringList("location");
-    String link = "http://maps.google.com/?q=${location[0]},${location[1]}";
+    // Explicitly handle null for the list elements
+    List<String> location = prefs.getStringList("location") ?? ["0", "0"];
+    String link = "http://maps.google.com/?q=$${location[0]},${location[1]}";
     print(location);
     print(link);
-    Telephony.backgroundInstance
-        .sendSms(to: contact, message: "I am on my way! Track me here.\n$link");
+    // Use null-aware operator to safely call sendSms
+    Telephony.backgroundInstance.sendSms(to: contact ?? "", message: "I am on my way! Track me here.\n$link");
     return true;
   });
+}
+
+Future<void> startBackgroundService() async {
+  await FlutterBackgroundService().configure(
+    androidConfiguration: AndroidConfiguration(
+      onStart: onStart,
+      isForegroundMode: true,
+      autoStart: false,
+    ),
+    iosConfiguration: IosConfiguration(
+      onForeground: onStart,
+      autoStart: false,
+    ),
+  );
+  await FlutterBackgroundService().startService();
 }
 
 // I hope this project have helped you

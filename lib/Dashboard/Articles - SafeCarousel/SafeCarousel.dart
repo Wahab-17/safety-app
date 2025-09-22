@@ -6,7 +6,7 @@ import 'package:womensafteyhackfair/Dashboard/Articles%20-%20SafeCarousel/SadeWe
 import 'package:womensafteyhackfair/constants.dart';
 
 class SafeCarousel extends StatelessWidget {
-  const SafeCarousel({Key key}) : super(key: key);
+  const SafeCarousel({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +75,7 @@ class SafeCarousel extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                               gradient: LinearGradient(
                                   colors: [
-                                    Colors.black.withOpacity(0.5),
+                                    const Color.fromRGBO(0, 0, 0, 0.5),
                                     Colors.transparent
                                   ],
                                   begin: Alignment.bottomLeft,

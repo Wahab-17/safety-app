@@ -5,21 +5,21 @@ import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart' as appPermissions;
 import 'package:pinput/pin_put/pin_put.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sms_maintained/sms.dart' as smsSender;
+import 'package:telephony/telephony.dart';
 import 'package:womensafteyhackfair/Dashboard/ContactScreens/phonebook_view.dart';
 import 'package:womensafteyhackfair/Dashboard/Home.dart';
 import 'package:womensafteyhackfair/Dashboard/ContactScreens/MyContacts.dart';
 
 class Dashboard extends StatefulWidget {
   final int pageIndex;
-  const Dashboard({Key key, this.pageIndex = 0}) : super(key: key);
+  const Dashboard({Key? key, this.pageIndex = 0}) : super(key: key);
 
   @override
   _DashboardState createState() => _DashboardState(currentPage: pageIndex);
 }
 
 class _DashboardState extends State<Dashboard> {
-  _DashboardState({this.currentPage = 0});
+  _DashboardState({int currentPage = 0}) : currentPage = currentPage;
 
   List<Widget> screens = [Home(), MyContactsScreen()];
   bool alerted = false;
@@ -41,12 +41,12 @@ class _DashboardState extends State<Dashboard> {
     checkPermission();
   }
 
-  SharedPreferences prefs;
+  SharedPreferences? prefs;
   checkAlertSharedPreferences() async {
     prefs = await SharedPreferences.getInstance();
     if (mounted)
       setState(() {
-        alerted = prefs.getBool("alerted") ?? false;
+        alerted = prefs?.getBool("alerted") ?? false;
       });
   }
 
@@ -70,7 +70,7 @@ class _DashboardState extends State<Dashboard> {
               backgroundColor: Color(0xFFFB9580),
               onPressed: () async {
                 if (alerted) {
-                  int pin = (prefs.getInt('pin') ?? -1111);
+                  int pin = (prefs?.getInt('pin') ?? -1111);
                   print('User $pin .');
                   if (pin == -1111) {
                     sendAlertSMS(false);
@@ -156,35 +156,22 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  void sendSMS(String number, String msgText) {
+  void sendSMS(String number, String msgText) async {
     print(number);
     print(msgText);
-    smsSender.SmsMessage msg = new smsSender.SmsMessage(number, msgText);
-    final smsSender.SmsSender sender = new smsSender.SmsSender();
-    msg.onStateChanged.listen((state) {
-      if (state == smsSender.SmsMessageState.Sending) {
-        return Fluttertoast.showToast(
-          msg: 'Sending Alert...',
-          backgroundColor: Colors.blue,
-        );
-      } else if (state == smsSender.SmsMessageState.Sent) {
-        return Fluttertoast.showToast(
-          msg: 'Alert Sent Successfully!',
-          backgroundColor: Colors.green,
-        );
-      } else if (state == smsSender.SmsMessageState.Fail) {
-        return Fluttertoast.showToast(
-          msg: 'Failure! Check your credits & Network Signals!',
-          backgroundColor: Colors.red,
-        );
-      } else {
-        return Fluttertoast.showToast(
-          msg: 'Failed to send SMS. Try Again!',
-          backgroundColor: Colors.red,
-        );
-      }
-    });
-    sender.sendSms(msg);
+    final Telephony telephony = Telephony.instance;
+    try {
+      await telephony.sendSms(to: number, message: msgText);
+      Fluttertoast.showToast(
+        msg: 'Alert Sent Successfully!',
+        backgroundColor: Colors.green,
+      );
+    } catch (_) {
+      Fluttertoast.showToast(
+        msg: 'Failure! Check your credits & Network Signals!',
+        backgroundColor: Colors.red,
+      );
+    }
   }
 
   sendAlertSMS(bool isAlert) async {
@@ -197,7 +184,7 @@ class _DashboardState extends State<Dashboard> {
 
     prefs.setBool("alerted", isAlert);
     List<String> numbers = prefs.getStringList("numbers") ?? [];
-    LocationData myLocation;
+    LocationData? myLocation;
     String error;
     Location location = new Location();
     String link = '';
@@ -313,9 +300,7 @@ class _DashboardState extends State<Dashboard> {
                     selectedFieldDecoration: _pinPutDecoration,
                     followingFieldDecoration: _pinPutDecoration.copyWith(
                       borderRadius: BorderRadius.circular(5.0),
-                      border: Border.all(
-                        color: Colors.deepPurpleAccent.withOpacity(.5),
-                      ),
+                      border: Border.all(color: Colors.deepPurpleAccent.withAlpha((255 * .5).round())),
                     ),
                   ),
                 ),

@@ -9,7 +9,7 @@ import 'package:womensafteyhackfair/Dashboard/Articles%20-%20SafeCarousel/SafeCa
 import 'package:womensafteyhackfair/Dashboard/DashWidgets/SafeHome.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key key}) : super(key: key);
+  const Home({Key? key}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -23,7 +23,7 @@ class _HomeState extends State<Home> {
     getRandomInt(false);
   }
 
-  getRandomInt(fromClick) {
+  void getRandomInt(bool fromClick) {
     Random rnd = Random();
 
     quoteIndex = rnd.nextInt(4);
@@ -37,10 +37,7 @@ class _HomeState extends State<Home> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DashAppbar(
-          getRandomInt: getRandomInt,
-          quoteIndex: quoteIndex,
-        ),
+        DashAppbar(getRandomInt: getRandomInt, quoteIndex: quoteIndex),
         Expanded(
           child: Container(
             child: ListView(

@@ -4,13 +4,14 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MyContactsScreen extends StatefulWidget {
-  const MyContactsScreen({Key key}) : super(key: key);
+  const MyContactsScreen({Key? key}) : super(key: key);
 
   @override
   _MyContactsScreenState createState() => _MyContactsScreenState();
 }
 
 class _MyContactsScreenState extends State<MyContactsScreen> {
+  List<String> _contacts = const <String>[];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,7 +32,8 @@ class _MyContactsScreenState extends State<MyContactsScreen> {
       body: FutureBuilder(
           future: checkforContacts(),
           builder: (context, AsyncSnapshot<List<String>> snap) {
-            if (snap.hasData && snap.data.isNotEmpty) {
+            if (snap.hasData && (snap.data?.isNotEmpty ?? false)) {
+              _contacts = snap.data!;
               return Column(
                 children: [
                   Padding(
@@ -56,7 +58,7 @@ class _MyContactsScreenState extends State<MyContactsScreen> {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: snap.data.length,
+                      itemCount: _contacts.length,
                       itemBuilder: (context, index) {
                         return Slidable(
                           actionPane: SlidableDrawerActionPane(),
@@ -68,10 +70,16 @@ class _MyContactsScreenState extends State<MyContactsScreen> {
                                 backgroundColor: Colors.grey[200],
                                 backgroundImage: AssetImage("assets/user.png"),
                               ),
-                              title: Text(snap.data[index].split("***")[0] ??
-                                  "No Name"),
-                              subtitle: Text(snap.data[index].split("***")[1] ??
-                                  "No Contact"),
+                              title: Text(
+                                (_contacts[index].split("***")[0]).isNotEmpty
+                                    ? _contacts[index].split("***")[0]
+                                    : "No Name",
+                              ),
+                              subtitle: Text(
+                                (_contacts[index].split("***")[1]).isNotEmpty
+                                    ? _contacts[index].split("***")[1]
+                                    : "No Contact",
+                              ),
                             ),
                           ),
                           secondaryActions: <Widget>[
@@ -84,10 +92,9 @@ class _MyContactsScreenState extends State<MyContactsScreen> {
                                 setState(() {
                                   Fluttertoast.showToast(
                                       msg:
-                                          "${snap.data[index].split("***")[0] ?? "No Name"} removed!");
-                                  snap.data.remove(snap.data[index]);
-
-                                  updateNewContactList(snap.data);
+                                          "${_contacts[index].split("***")[0]} removed!");
+                                  _contacts.removeAt(index);
+                                  updateNewContactList(_contacts);
                                 });
                               },
                             ),
@@ -112,7 +119,7 @@ class _MyContactsScreenState extends State<MyContactsScreen> {
 
   Future<List<String>> checkforContacts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> contacts = prefs.getStringList("numbers") ?? [];
+    List<String> contacts = prefs.getStringList("numbers") ?? <String>[];
     print(contacts);
     return contacts;
   }

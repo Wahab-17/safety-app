@@ -6,7 +6,7 @@ import 'package:womensafteyhackfair/Dashboard/Settings/ChangePin.dart';
 import 'package:womensafteyhackfair/background_services.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key key}) : super(key: key);
+  const SettingsScreen({Key? key}) : super(key: key);
 
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
@@ -62,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              ChangePinScreen(pin: snapshot.data),
+                              ChangePinScreen(pin: snapshot.data as int),
                         ),
                       );
                     },
@@ -184,7 +184,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<bool> checkService() async {
-    bool running = await FlutterBackgroundService().isServiceRunning();
+    bool running = await FlutterBackgroundService().isRunning();
     setState(() {
       switchValue = running;
     });
@@ -194,11 +194,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void controllSafeShake(bool val) async {
     if (val) {
-      FlutterBackgroundService.initialize(onStart);
+      await startBackgroundService();
     } else {
-      FlutterBackgroundService().sendData(
-        {"action": "stopService"},
-      );
+      FlutterBackgroundService().invoke('stopService');
     }
   }
 }

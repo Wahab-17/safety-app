@@ -6,13 +6,7 @@ class AboutCard extends StatelessWidget {
   final String desc;
   final String asset;
   final double sizeFactor;
-  AboutCard(
-      {Key key,
-      this.asset,
-      this.desc,
-      this.subtitle,
-      this.title,
-      this.sizeFactor})
+  const AboutCard({Key? key, required this.asset, required this.desc, required this.subtitle, required this.title, required this.sizeFactor})
       : super(key: key);
 
   @override

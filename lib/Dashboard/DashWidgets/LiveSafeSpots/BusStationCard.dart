@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class BusStationCard extends StatelessWidget {
-    final Function openMapFunc;
+    final Future<void> Function(String) openMapFunc;
 
-  const BusStationCard({Key key, this.openMapFunc}) : super(key: key);
+  const BusStationCard({Key? key, required this.openMapFunc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

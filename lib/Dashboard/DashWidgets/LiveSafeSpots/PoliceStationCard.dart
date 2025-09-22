@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class PoliceStationCard extends StatelessWidget {
-  final Function openMapFunc;
-  const PoliceStationCard({Key key, this.openMapFunc}) : super(key: key);
+  final Future<void> Function(String) openMapFunc;
+  const PoliceStationCard({Key? key, required this.openMapFunc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

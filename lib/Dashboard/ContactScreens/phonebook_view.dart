@@ -19,8 +19,8 @@ class PhoneBook extends StatefulWidget {
 }
 
 class _PhoneBookState extends State<PhoneBook> {
-  List<Contact> _contacts;
-  List<Contact> filteredContacts;
+  List<Contact> _contacts = <Contact>[];
+  List<Contact> filteredContacts = <Contact>[];
   List<Contact> _userSelectedContacts = [];
 
   Permission _permission = Permission.contacts;
@@ -31,7 +31,7 @@ class _PhoneBookState extends State<PhoneBook> {
 
     if (_permissionStatus != PermissionStatus.granted) {
       _permissionStatus = await _permission.request();
-      return _permissionStatus ?? PermissionStatus.denied;
+      return _permissionStatus;
     } else {
       return _permissionStatus;
     }
@@ -59,7 +59,7 @@ class _PhoneBookState extends State<PhoneBook> {
           code: "PERMISSION_DENIED",
           message: "Access to location data denied",
           details: null);
-    } else if (permissionStatus == PermissionStatus.denied) {
+    } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
       throw new PlatformException(
           code: "PERMISSION_DISABLED",
           message: "Location data is not available on device",
@@ -90,8 +90,9 @@ class _PhoneBookState extends State<PhoneBook> {
     if (_userSelectedContacts.isNotEmpty) {
       for (Contact c in _userSelectedContacts) {
         String entity = "";
-        if (c.phones.isNotEmpty) {
-          String refactoredNumber = refactorPhoneNumbers(c.phones.first.value);
+        final phones = c.phones ?? const <Item>[];
+        if (phones.isNotEmpty) {
+          String refactoredNumber = refactorPhoneNumbers(phones.first.value);
           entity = "${c.displayName ?? "User"}***$refactoredNumber";
         } else {
           entity = "${c.displayName ?? "User"}***";
@@ -143,7 +144,7 @@ class _PhoneBookState extends State<PhoneBook> {
           onChanged: (string) {
             setState(() {
               filteredContacts = _contacts
-                  .where((c) => (c.displayName
+                  .where((c) => ((c.displayName ?? '')
                       .toLowerCase()
                       .contains(string.toLowerCase())))
                   .toList();
@@ -151,30 +152,25 @@ class _PhoneBookState extends State<PhoneBook> {
           },
         ),
       ),
-      body: _contacts != null
-          ? Container(
+      body: Container(
               height: height,
               width: width,
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(vertical: height * 0.01),
                 separatorBuilder: (context, index) {
-                  Contact c = filteredContacts?.elementAt(index);
-                  if (c.phones.isEmpty) {
+                  Contact c = filteredContacts.elementAt(index);
+                  final phones = c.phones ?? const <Item>[];
+                  if (phones.isEmpty) {
                     return SizedBox();
                   }
                   return Divider(height: height * 0.01);
                 },
-                itemCount: filteredContacts?.length ?? 0,
+                itemCount: filteredContacts.length,
                 itemBuilder: (BuildContext context, int index) {
-                  Contact c = filteredContacts?.elementAt(index);
-                  return ItemsTile(addToContacts, c, c.phones);
+                  Contact c = filteredContacts.elementAt(index);
+                  return ItemsTile(addToContacts, c, c.phones ?? const <Item>[]);
                 },
               ),
-            )
-          : Center(
-              child: CircularProgressIndicator(
-                  valueColor:
-                      new AlwaysStoppedAnimation<Color>(Color(0xffbe3a5a))),
             ),
     );
   }
@@ -184,14 +180,17 @@ class _PhoneBookState extends State<PhoneBook> {
     bool alreadyInList = false;
     for (Contact c in _userSelectedContacts) {
       print("INside contacts: ID: ${c.displayName}");
-      if (c.displayName != null || c.displayName != "") {
-        if (c.displayName == con.displayName) {
+      final name = c.displayName ?? '';
+      if (name.isNotEmpty) {
+        if (name == (con.displayName ?? '')) {
           alreadyInList = true;
           break;
         }
       } else {
-        if (c.phones.isNotEmpty) {
-          if (c.phones.contains(con.phones.first)) {
+        final cPhones = c.phones ?? const <Item>[];
+        final conPhones = con.phones ?? const <Item>[];
+        if (cPhones.isNotEmpty && conPhones.isNotEmpty) {
+          if (cPhones.contains(conPhones.first)) {
             alreadyInList = true;
             break;
           }
@@ -207,11 +206,11 @@ class _PhoneBookState extends State<PhoneBook> {
     }
   }
 
-  String refactorPhoneNumbers(String phone) {
-    if (phone == null || phone == "") {
+  String refactorPhoneNumbers(String? phone) {
+    if (phone == null || phone.isEmpty) {
       return "";
     }
-    var newPhone = phone.replaceAll(RegExp(r"[^\name\w]"), '');
+    var newPhone = phone.replaceAll(RegExp(r"[^0-9+]"), '');
     if (newPhone.length == 12) {
       newPhone = "+" + newPhone.substring(0, newPhone.length);
     }
@@ -258,7 +257,8 @@ class _ItemsTileState extends State<ItemsTile> {
     if (currentContact.isNotEmpty) {
       currentContact = '';
     }
-    return widget._items.isEmpty
+    final items = widget._items.toList();
+    return items.isEmpty
         ? SizedBox()
         : WidgetAnimator(
             Card(
@@ -273,7 +273,7 @@ class _ItemsTileState extends State<ItemsTile> {
                 },
                 leading: CircleAvatar(
                     backgroundColor: Color(0xffbe3a5a),
-                    child: Text('${widget.c.displayName[0]}'.toUpperCase(),
+                    child: Text('${(widget.c.displayName ?? ' ')[0]}'.toUpperCase(),
                         style: TextStyle(color: Colors.white)),
                     radius: height * 0.025),
                 title: Column(
@@ -287,13 +287,14 @@ class _ItemsTileState extends State<ItemsTile> {
                     SizedBox(height: height * 0.01),
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: widget._items.map((
+                        children: items.map((
                           i,
                         ) {
-                          if (currentContact == i.value.replaceAll(" ", "")) {
+                          final ivalue = (i.value ?? '').replaceAll(" ", "");
+                          if (currentContact == ivalue) {
                             return Row();
                           }
-                          currentContact = i.value.replaceAll(" ", "");
+                          currentContact = ivalue;
                           return Text(
                             i.value ?? i.label ?? "",
                             style: TextStyle(color: Colors.grey[600]),

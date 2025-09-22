@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class LiveSafe extends StatelessWidget {
-  const LiveSafe({Key key}) : super(key: key);
+  const LiveSafe({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,9 @@ class LiveSafe extends StatelessWidget {
         'https://www.google.com/maps/search/?api=1&query=$location';
 
     try {
-      await launch(googleUrl);
+      final uri = Uri.parse(googleUrl);
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!ok) throw Exception('launchUrl failed');
     } catch (e) {
       print(e);
       Fluttertoast.showToast(

@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ChangePinScreen extends StatefulWidget {
   final int pin;
-  const ChangePinScreen({Key key, this.pin}) : super(key: key);
+  const ChangePinScreen({Key? key, required this.pin}) : super(key: key);
 
   @override
   _ChangePinScreenState createState() => _ChangePinScreenState();
@@ -96,9 +96,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                     selectedFieldDecoration: _pinPutDecoration,
                     followingFieldDecoration: _pinPutDecoration.copyWith(
                       borderRadius: BorderRadius.circular(5.0),
-                      border: Border.all(
-                        color: Colors.deepPurpleAccent.withOpacity(.5),
-                      ),
+                      border: Border.all(color: Colors.deepPurpleAccent.withAlpha((255 * .5).round())),
                     ),
                   ),
                 ),
@@ -135,9 +133,7 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
               selectedFieldDecoration: _pinPutDecoration,
               followingFieldDecoration: _pinPutDecoration.copyWith(
                 borderRadius: BorderRadius.circular(5.0),
-                border: Border.all(
-                  color: Colors.deepPurpleAccent.withOpacity(.5),
-                ),
+                border: Border.all(color: Colors.deepPurpleAccent.withAlpha((255 * .5).round())),
               ),
             ),
           ),

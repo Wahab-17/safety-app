@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:womensafteyhackfair/Dashboard/Settings/SettingsScreen.dart';
 import 'package:womensafteyhackfair/constants.dart';
 
-class DashAppbar extends StatelessWidget {
-  final Function getRandomInt;
+class DashAppbar extends StatelessWidget implements PreferredSizeWidget {
+  final void Function(bool) getRandomInt;
   final int quoteIndex;
-  DashAppbar({Key key, this.getRandomInt, this.quoteIndex}) : super(key: key);
+  DashAppbar({Key? key, required this.getRandomInt, required this.quoteIndex}) : super(key: key);
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {

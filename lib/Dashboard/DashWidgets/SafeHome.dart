@@ -4,11 +4,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:womensafteyhackfair/Dashboard/ContactScreens/phonebook_view.dart';
-import 'package:womensafteyhackfair/background_services.dart';
+// import 'package:womensafteyhackfair/background_services.dart';
 import 'package:workmanager/workmanager.dart';
 
 class SafeHome extends StatefulWidget {
-  const SafeHome({Key key}) : super(key: key);
+  const SafeHome({Key? key}) : super(key: key);
 
   @override
   _SafeHomeState createState() => _SafeHomeState();
@@ -196,9 +196,9 @@ class _SafeHomeState extends State<SafeHome> {
                             builder: (context,
                                 AsyncSnapshot<List<String>> snapshot) {
                               if (snapshot.hasData &&
-                                  snapshot.data.isNotEmpty) {
+                                  (snapshot.data?.isNotEmpty ?? false)) {
                                 return ListView.separated(
-                                    itemCount: snapshot.data.length,
+                                    itemCount: snapshot.data!.length,
                                     separatorBuilder: (context, index) {
                                       return Divider(
                                         indent: 20,
@@ -206,7 +206,7 @@ class _SafeHomeState extends State<SafeHome> {
                                       );
                                     },
                                     itemBuilder: (context, index) {
-                                      String contactData = snapshot.data[index];
+                                      String contactData = snapshot.data![index];
                                       return ListTile(
                                         onTap: () {
                                           setModalState(() {
@@ -217,10 +217,12 @@ class _SafeHomeState extends State<SafeHome> {
                                           backgroundImage:
                                               AssetImage("assets/user.png"),
                                         ),
-                                        title:
-                                            Text(contactData.split("***")[0]),
-                                        subtitle:
-                                            Text(contactData.split("***")[1]),
+                                        title: Text(contactData.split("***").isNotEmpty
+                                            ? contactData.split("***")[0]
+                                            : ''),
+                                        subtitle: Text(contactData.split("***").length > 1
+                                            ? contactData.split("***")[1]
+                                            : ''),
                                         trailing: selectedContact == index
                                             ? Icon(
                                                 Icons.check_circle,

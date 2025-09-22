@@ -6,17 +6,16 @@ class Animator extends StatefulWidget {
   final Widget child;
   final Duration time;
 
-  Animator(this.child, this.time);
+  const Animator(this.child, this.time);
 
   @override
   _AnimatorState createState() => _AnimatorState();
 }
 
-class _AnimatorState extends State<Animator>
-    with SingleTickerProviderStateMixin {
-  Timer timer;
-  AnimationController animationController;
-  Animation animation;
+class _AnimatorState extends State<Animator> with SingleTickerProviderStateMixin {
+  late Timer timer;
+  late AnimationController animationController;
+  late Animation<double> animation;
 
   @override
   void initState() {
@@ -40,12 +39,12 @@ class _AnimatorState extends State<Animator>
     return AnimatedBuilder(
       animation: animation,
       child: widget.child,
-      builder: (BuildContext context, Widget child) {
+      builder: (BuildContext context, Widget? child) {
         return Opacity(
           opacity: animation.value,
           child: Transform.translate(
             offset: Offset(0.0, (1 - animation.value) * 20),
-            child: child,
+            child: child ?? const SizedBox.shrink(),
           ),
         );
       },
@@ -53,23 +52,23 @@ class _AnimatorState extends State<Animator>
   }
 }
 
-Timer timer;
-Duration duration = Duration();
+Timer? timer;
+Duration duration = const Duration();
 
 wait() {
-  if (timer == null || !timer.isActive) {
-    timer = Timer(Duration(microseconds: 120), () {
-      duration = Duration();
+  if (timer == null || !(timer!.isActive)) {
+    timer = Timer(const Duration(microseconds: 120), () {
+      duration = const Duration();
     });
   }
-  duration += Duration(milliseconds: 100);
+  duration += const Duration(milliseconds: 100);
   return duration;
 }
 
 class WidgetAnimator extends StatelessWidget {
   final Widget child;
 
-  WidgetAnimator(this.child);
+  const WidgetAnimator(this.child);
 
   @override
   Widget build(BuildContext context) {

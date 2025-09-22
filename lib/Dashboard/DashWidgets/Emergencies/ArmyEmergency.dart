@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 
 class ArmyEmergency extends StatelessWidget {
-  const ArmyEmergency({Key key}) : super(key: key);
+  const ArmyEmergency({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

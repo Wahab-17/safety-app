@@ -5,7 +5,7 @@ import 'package:womensafteyhackfair/Dashboard/DashWidgets/Emergencies/Firebrigad
 import 'package:womensafteyhackfair/Dashboard/DashWidgets/Emergencies/PoliceEmergency.dart';
 
 class Emergency extends StatelessWidget {
-  const Emergency({Key key}) : super(key: key);
+  const Emergency({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

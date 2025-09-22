@@ -6,7 +6,7 @@ import 'package:womensafteyhackfair/Dashboard/Articles%20-%20SafeCarousel/SadeWe
 import 'package:womensafteyhackfair/constants.dart';
 
 class AllArticles extends StatefulWidget {
-  AllArticles({Key key}) : super(key: key);
+  const AllArticles({Key? key}) : super(key: key);
 
   @override
   _AllArticlesState createState() => _AllArticlesState();
@@ -14,13 +14,16 @@ class AllArticles extends StatefulWidget {
 
 class _AllArticlesState extends State<AllArticles>
     with TickerProviderStateMixin {
-  AnimationController _controller;
+  late final AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(vsync: this);
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
   }
 
   @override
@@ -43,13 +46,13 @@ class _AllArticlesState extends State<AllArticles>
                 fit: BoxFit.fitWidth,
                 alignment: Alignment.topCenter,
               ),
-              color: Colors.grey[50].withOpacity(0.3),
+              color: const Color.fromRGBO(250, 250, 250, 0.3),
             ),
             child: CustomScrollView(
               slivers: <Widget>[
                 SliverAppBar(
                   expandedHeight: 188.0,
-                  backgroundColor: Colors.grey[50].withOpacity(0.3),
+                  backgroundColor: const Color.fromRGBO(250, 250, 250, 0.3),
                   flexibleSpace: FlexibleSpaceBar(
                     background: Lottie.asset(
                       "assets/reading.json",
@@ -125,7 +128,7 @@ class _AllArticlesState extends State<AllArticles>
                                       borderRadius: BorderRadius.circular(20),
                                       gradient: LinearGradient(
                                           colors: [
-                                            Colors.black.withOpacity(0.5),
+                                            const Color.fromRGBO(0, 0, 0, 0.5),
                                             Colors.transparent
                                           ],
                                           begin: Alignment.bottomLeft,
