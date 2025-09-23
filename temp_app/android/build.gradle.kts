@@ -4,6 +4,15 @@ allprojects {
         mavenCentral()
     }
 }
+// Workaround for legacy plugins (like contacts_service 0.6.x) that lack an Android namespace
+// This configures a namespace for that subproject so AGP 8+ can build.
+plugins.withId("com.android.library") {
+    if (project.name == "contacts_service") {
+        extensions.configure<com.android.build.gradle.LibraryExtension>("android") {
+            namespace = "flutter.plugins.contacts_service"
+        }
+    }
+}
 
 val newBuildDir: Directory =
     rootProject.layout.buildDirectory
